@@ -6,8 +6,8 @@ let canvas = document.getElementById("canvas"),
 let points = []
     sticks = [],
     ball_radius = 25,
-    bounce = 0.99,                     // reduce velocity after every bounce
-    gravity = 0.3,
+    bounce = 0.9,                     // reduce velocity after every bounce
+    gravity = 0.5,
     friction = 0.99;
 
 // 0

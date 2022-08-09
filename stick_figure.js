@@ -5,8 +5,8 @@ let canvas = document.getElementById("canvas"),
 
 let points = []
     sticks = [],
-    ball_radius = 20,
-    bounce = 0.99,                     // reduce velocity after every bounce
+    ball_radius = 5,
+    bounce = 0.2,                     // reduce velocity after every bounce
     gravity = 0.3,
     friction = 0.99;
 
@@ -182,6 +182,11 @@ sticks.push({
     visible: false
 })
 
+let Circle = {
+    x: width/2,
+    y: height/2
+}
+
 
 function distance(p1, p2){
     let dx = p1.x - p2.x,
@@ -192,29 +197,91 @@ function distance(p1, p2){
 
 update();
 
-document.body.addEventListener("click",function(event){
-    gravity *= (-1);
+// document.body.addEventListener("click",function(event){
+//     gravity *= (-1);
+// }
+let dragging = false;
+let dragHandle;
+let offset = {
+    x:0,
+    y:0
+}
+let mouse = {
+    x: 0,
+    y: 0
+}
+    
+document.body.addEventListener("mousedown",function(){
+    dragging = true;
+})
+document.body.addEventListener("mousemove",function(event){
+    if(dragging){
+        mouse.x = event.clientX;
+        mouse.y = event.clientY;
+        
+        if(mouse.x >= points[1].x - 80 && mouse.x <= points[1].x + 80
+            && mouse.y >= points[1].y - 80 && mouse.y <= points[1].y + 80){
+                document.body.addEventListener("mousemove",onMouseMove);
+                document.body.addEventListener("mouseup",onMouseUp);
+
+                dragHandle = points[1];
+                offset.x  = event.clientX - points[1].x;
+                offset.y  = event.clientY - points[1].y;
+        }
+        
+    }
+})
+document.body.addEventListener("mouseup",function(){
+    dragging = false;
 })
 
-function update(){
+function onMouseMove(event){
+    dragHandle.x = event.clientX - offset.x;
+    dragHandle.y = event.clientY - offset.y;
+}
+function onMouseUp(event){
+    document.body.removeEventListener("mousemove",onMouseMove);
+    document.body.removeEventListener("mouseup",onMouseUp);
+}
 
+function detectCollision(){
+    let dist;
+    for(let i=0;i<points.length;i++){
+        let p = points[i];
+        dist = Math.sqrt((Circle.x - p.x)*(Circle.x - p.x) + (Circle.y - p.y)*(Circle.y - p.y));
+        if(ball_radius + 60 >= dist){
+                p.y = Circle.y - 60;
+                p.oldy = p.y + (p.y - p.oldy)*bounce;
+                console.log("collision");
+            }
+    }
+}
+
+function update(){
     
     updatePoints();
     updateSticks();
+
+    detectCollision();
     
     ctx.clearRect(0,0,width,height);
+
+    ctx.beginPath();
+    ctx.fillStyle = "white";
+    ctx.arc(Circle.x, Circle.y, 60, Math.PI, Math.PI*2);
+    ctx.fill();
 
     ctx.beginPath();
     ctx.fillStyle = "white";
 
     let x1 = points[0].x,
         y1 = points[0].y;
-    console.log(x1,y1);
-    ctx.arc(x1, y1, ball_radius, 0, Math.PI*2);
+    // console.log(x1,y1);
+    ctx.arc(x1, y1, 20, 0, Math.PI*2);
     ctx.stroke();
 
-    // renderPoints();
-    renderSticks();
+    renderPoints();
+    // renderSticks();
 
     requestAnimationFrame(update);
 }
@@ -267,7 +334,7 @@ function renderPoints(){
         let p = points[i];
 
         ctx.beginPath();
-        ctx.fillStyle = "white";
+        ctx.fillStyle = "red";
         ctx.arc(p.x, p.y, ball_radius, 0, Math.PI*2);
         ctx.fill();
     }
